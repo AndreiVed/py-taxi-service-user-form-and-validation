@@ -6,6 +6,25 @@ from django.core.exceptions import ValidationError
 from taxi.models import Driver, Car
 
 
+def validate_license_number(license_number):
+    if len(license_number) != 8:
+        raise ValidationError(
+            "License number must consist only of 8 characters"
+        )
+
+    if (any(char.isdigit() for char in license_number[:3])
+            or license_number[:3] != license_number[:3].upper()):
+        raise ValidationError(
+            "First 3 characters in license "
+            "number must be uppercase letters"
+        )
+    if not license_number[-5:].isdigit():
+        raise ValidationError(
+            "Last 5 characters in license number must be digits"
+        )
+    return license_number
+
+
 class DriverCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = Driver
@@ -16,23 +35,7 @@ class DriverCreationForm(UserCreationForm):
         )
 
     def clean_license_number(self):
-        license_number = self.cleaned_data["license_number"]
-        if len(license_number) != 8:
-            raise ValidationError(
-                "License number must consist only of 8 characters"
-            )
-
-        if (any(char.isdigit() for char in license_number[:3])
-                or license_number[:3] != license_number[:3].upper()):
-            raise ValidationError(
-                "First 3 characters in license "
-                "number must be uppercase letters"
-            )
-        if not license_number[-5:].isdigit():
-            raise ValidationError(
-                "Last 5 characters in license number must be digits"
-            )
-        return license_number
+        return validate_license_number(self.cleaned_data["license_number"])
 
 
 class DriverLicenseUpdateForm(forms.ModelForm):
@@ -41,23 +44,7 @@ class DriverLicenseUpdateForm(forms.ModelForm):
         fields = ("license_number",)
 
     def clean_license_number(self):
-        license_number = self.cleaned_data["license_number"]
-        if len(license_number) != 8:
-            raise ValidationError(
-                "License number must consist only of 8 characters"
-            )
-
-        if (any(char.isdigit() for char in license_number[:3])
-                or license_number[:3] != license_number[:3].upper()):
-            raise ValidationError(
-                "First 3 characters in license "
-                "number must be uppercase letters"
-            )
-        if not license_number[-5:].isdigit():
-            raise ValidationError(
-                "Last 5 characters in license number must be digits"
-            )
-        return license_number
+        return validate_license_number(self.cleaned_data["license_number"])
 
 
 class CarForm(forms.ModelForm):
